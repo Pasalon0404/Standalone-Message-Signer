@@ -433,6 +433,84 @@
       color: var(--dim);
     }
 
+    /* ── Share section ───────────────────────────────────── */
+
+    .share-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .share-label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .share-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .share-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.4;
+      padding: 10px 12px;
+      cursor: default;
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .share-input:not(:placeholder-shown) {
+      color: var(--muted);
+    }
+
+    .btn-copy {
+      flex-shrink: 0;
+      padding: 0 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      white-space: nowrap;
+      -webkit-appearance: none;
+      appearance: none;
+      touch-action: manipulation;
+    }
+
+    .btn-copy:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .btn-copy.copied {
+      border-color: var(--teal);
+      color: var(--teal);
+      background: var(--teal-muted);
+    }
+
     /* ── Responsive ───────────────────────────────────────── */
 
     @media (max-width: 380px) {
@@ -541,6 +619,21 @@
           Verify Signature
         </span>
       </button>
+
+      <!-- Share Link -->
+      <div class="share-section">
+        <div class="share-label">Share Verification Link</div>
+        <div class="share-row">
+          <input
+            type="text"
+            id="shareUrl"
+            class="share-input"
+            readonly
+            placeholder="Fill in the fields above to generate a link…"
+          />
+          <button id="copyBtn" class="btn-copy" type="button">Copy</button>
+        </div>
+      </div>
     </div>
 
     <!-- ── Result ───────────────────────────────────────────── -->
@@ -1033,7 +1126,63 @@
 
 
     // ═══════════════════════════════════════════════════════
-    //  SECTION 8 — Initialise: URL params + event wiring
+    //  SECTION 8 — Share link generator + copy button
+    // ═══════════════════════════════════════════════════════
+
+    function updateShareUrl() {
+      const address   = document.getElementById('addressInput').value.trim();
+      const message   = document.getElementById('messageInput').value;
+      const signature = document.getElementById('signatureInput').value.trim();
+      const shareEl   = document.getElementById('shareUrl');
+
+      if (!address && !message && !signature) {
+        shareEl.value = '';
+        return;
+      }
+
+      const base   = 'https://verify.safekeepbitcoin.com/';
+      const params = new URLSearchParams();
+      if (address)   params.set('address', address);
+      if (message)   params.set('msg',     message);
+      if (signature) params.set('sig',     signature);
+
+      shareEl.value = base + '?' + params.toString();
+    }
+
+    // Wire live updates
+    ['addressInput', 'messageInput', 'signatureInput'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateShareUrl);
+    });
+
+    // Copy button
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const url = document.getElementById('shareUrl').value;
+      if (!url) return;
+
+      const btn = document.getElementById('copyBtn');
+      try {
+        await navigator.clipboard.writeText(url);
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (_) {
+        // Fallback for non-HTTPS contexts
+        document.getElementById('shareUrl').select();
+        document.execCommand('copy');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 9 — Initialise: URL params + event wiring
     // ═══════════════════════════════════════════════════════
 
     function getParam(name) {
@@ -1060,6 +1209,7 @@
     }
     if (hasParams) {
       document.getElementById('qrInfo').classList.remove('hidden');
+      updateShareUrl();
     }
 
     document.getElementById('verifyBtn').addEventListener('click', async () => {
