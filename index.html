@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#09090f" />
+  <meta name="theme-color" content="#0d0d0d" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Bitcoin Signature Verifier — SafeKeep</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after {
@@ -20,183 +17,164 @@
     }
 
     :root {
-      --bg:            #09090f;
-      --surface:       #111118;
-      --surface-2:     #18181f;
-      --surface-3:     #1f1f28;
-      --border:        rgba(255,255,255,0.07);
-      --border-strong: rgba(255,255,255,0.13);
-      --text:          #eaeaf5;
-      --text-muted:    #6868a0;
-      --text-dim:      #404060;
-      --orange:        #f7931a;
-      --orange-glow:   rgba(247,147,26,0.18);
-      --orange-border: rgba(247,147,26,0.25);
-      --green:         #00e68a;
-      --green-bg:      rgba(0,230,138,0.07);
-      --green-border:  rgba(0,230,138,0.28);
-      --green-glow:    rgba(0,230,138,0.15);
-      --red:           #ff4466;
-      --red-bg:        rgba(255,68,102,0.07);
-      --red-border:    rgba(255,68,102,0.28);
-      --red-glow:      rgba(255,68,102,0.15);
-      --radius:        14px;
-      --radius-sm:     9px;
-      --radius-xs:     6px;
+      --bg:       #0d0d0d;
+      --card:     #141414;
+      --surface:  #1a1a1a;
+      --input-bg: #1e1e1e;
+      --border:   #2a2a2a;
+      --border-hover: #3a3a3a;
+      --text:     #e0e0e0;
+      --muted:    #a0a0a8;
+      --dim:      #7a7a82;
+      --orange:   #f7931a;
+      --orange-hover: #ffaa33;
+      --orange-muted: rgba(247,147,26,0.08);
+      --teal:     #03dac6;
+      --teal-hover: #04f5de;
+      --teal-muted: rgba(3,218,198,0.08);
+      --danger:   #cf6679;
+      --danger-muted: rgba(207,102,121,0.08);
+      --mono: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
     }
 
     html {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: var(--sans);
       -webkit-font-smoothing: antialiased;
     }
 
     body {
       min-height: 100dvh;
       background: var(--bg);
-      background-image:
-        radial-gradient(ellipse 80% 50% at 15% -10%, rgba(247,147,26,0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 85% 110%, rgba(100,80,255,0.05) 0%, transparent 70%);
     }
 
-    /* ─── Layout ──────────────────────────────────────────── */
+    /* ── Nav ──────────────────────────────────────────────── */
+
+    nav {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.2px;
+    }
+
+    .nav-brand span {
+      color: var(--orange);
+    }
+
+    .nav-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    /* ── Layout ───────────────────────────────────────────── */
 
     .container {
-      max-width: 500px;
+      max-width: 640px;
       margin: 0 auto;
-      padding: 28px 16px 56px;
+      padding: 36px 20px 64px;
     }
 
-    /* ─── Header ──────────────────────────────────────────── */
+    /* ── Header ───────────────────────────────────────────── */
 
     .header {
       text-align: center;
-      margin-bottom: 28px;
-      padding-top: 8px;
-    }
-
-    .logo-row {
-      display: inline-flex;
-      align-items: center;
-      gap: 11px;
-      margin-bottom: 20px;
-    }
-
-    .btc-ring {
-      position: relative;
-      width: 48px;
-      height: 48px;
-      flex-shrink: 0;
-    }
-
-    .btc-ring svg {
-      width: 48px;
-      height: 48px;
-    }
-
-    .brand-block {
-      text-align: left;
-    }
-
-    .brand-name {
-      font-size: 17px;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -0.3px;
-      line-height: 1.1;
-    }
-
-    .brand-tagline {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 1.8px;
-      text-transform: uppercase;
-      margin-top: 1px;
+      margin-bottom: 32px;
     }
 
     h1 {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: -0.7px;
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
       color: var(--text);
-      line-height: 1.15;
-      margin-bottom: 9px;
+      margin-bottom: 10px;
     }
 
     .subtitle {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.55;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
     }
 
-    /* ─── Security Badge ──────────────────────────────────── */
+    /* ── Security indicator ───────────────────────────────── */
 
-    .security-badge {
+    .security-indicator {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      background: var(--orange-glow);
-      border: 1px solid var(--orange-border);
-      border-radius: 100px;
-      padding: 6px 14px;
+      gap: 6px;
+      font-family: var(--mono);
       font-size: 10px;
-      font-weight: 700;
-      color: var(--orange);
-      letter-spacing: 1px;
+      font-weight: 600;
+      color: var(--teal);
       text-transform: uppercase;
-      margin-bottom: 20px;
+      letter-spacing: 1.5px;
+      margin-top: 12px;
     }
 
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
+    .security-indicator::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      background: var(--orange);
-      box-shadow: 0 0 0 0 rgba(247,147,26,0.5);
-      animation: pulse 2s ease-in-out infinite;
+      background: var(--teal);
     }
 
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(247,147,26,0.5); }
-      50%       { box-shadow: 0 0 0 5px rgba(247,147,26,0); }
-    }
-
-    /* ─── QR Info Row ─────────────────────────────────────── */
+    /* ── QR info banner ───────────────────────────────────── */
 
     .qr-info {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
+      background: var(--teal-muted);
+      border: 1px solid rgba(3,218,198,0.18);
       border-radius: var(--radius-sm);
-      padding: 10px 13px;
+      padding: 10px 14px;
       font-size: 12px;
       font-weight: 500;
-      color: var(--text-muted);
-      margin-bottom: 14px;
+      color: var(--teal);
+      margin-bottom: 16px;
+      font-family: var(--mono);
     }
 
     .qr-info svg { flex-shrink: 0; }
 
     .hidden { display: none !important; }
 
-    /* ─── Card ────────────────────────────────────────────── */
+    /* ── Card ─────────────────────────────────────────────── */
 
     .card {
-      background: var(--surface);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px;
-      margin-bottom: 14px;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 16px;
     }
 
-    /* ─── Fields ──────────────────────────────────────────── */
+    /* ── Fields ───────────────────────────────────────────── */
 
     .field {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
     .field:last-of-type {
@@ -206,108 +184,125 @@
     .label-row {
       display: flex;
       align-items: center;
-      gap: 7px;
-      margin-bottom: 7px;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
     label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.9px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--muted);
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .filled-badge {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      font-family: var(--mono);
       font-size: 9px;
       font-weight: 600;
-      color: var(--green);
-      background: rgba(0,230,138,0.09);
-      border: 1px solid rgba(0,230,138,0.22);
-      border-radius: 100px;
+      color: var(--teal);
+      background: var(--teal-muted);
+      border: 1px solid rgba(3,218,198,0.22);
+      border-radius: 4px;
       padding: 2px 6px;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
     input[type="text"],
     textarea {
       width: 100%;
-      background: var(--surface-2);
+      background: var(--input-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       color: var(--text);
-      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-family: var(--mono);
       font-size: 13px;
       line-height: 1.5;
-      padding: 11px 13px;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      padding: 12px 14px;
+      transition: border-color 0.15s ease, background 0.15s ease;
       resize: none;
       -webkit-appearance: none;
       appearance: none;
       outline: none;
     }
 
+    input[type="text"]:hover,
+    textarea:hover {
+      border-color: var(--border-hover);
+    }
+
     input[type="text"]:focus,
     textarea:focus {
-      border-color: rgba(247,147,26,0.45);
-      box-shadow: 0 0 0 3px rgba(247,147,26,0.07);
+      border-color: var(--teal);
+      background: var(--input-bg);
+      box-shadow: 0 0 0 3px var(--teal-muted);
     }
 
     input[type="text"]::placeholder,
     textarea::placeholder {
-      color: var(--text-dim);
-      font-family: 'Inter', sans-serif;
+      color: var(--dim);
+      font-family: var(--mono);
       font-size: 12px;
-      opacity: 0.9;
     }
 
     #addressInput   { height: 46px; }
     #messageInput   { height: 96px; }
     #signatureInput { height: 78px; word-break: break-all; }
 
-    /* ─── Verify Button ───────────────────────────────────── */
+    /* ── Verify Button ────────────────────────────────────── */
 
     .btn-verify {
+      display: block;
       width: 100%;
-      background: linear-gradient(135deg, #f7a21a 0%, #e07b08 100%);
+      margin-top: 24px;
+      padding: 14px;
+      background: var(--orange);
       border: none;
-      border-radius: var(--radius-sm);
-      color: #0a0507;
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
+      border-radius: var(--radius-md);
+      color: #111;
+      font-family: var(--sans);
+      font-size: 14px;
       font-weight: 800;
-      padding: 15px 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       cursor: pointer;
-      letter-spacing: 0.1px;
-      margin-top: 22px;
-      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
-      box-shadow: 0 4px 20px rgba(247,147,26,0.22);
+      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
       -webkit-appearance: none;
       appearance: none;
       touch-action: manipulation;
     }
 
-    .btn-verify:hover  { opacity: 0.93; box-shadow: 0 4px 24px rgba(247,147,26,0.32); }
+    .btn-verify:hover {
+      background: var(--orange-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(247,147,26,0.25);
+    }
+
     .btn-verify:active { transform: scale(0.985); }
-    .btn-verify:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-verify:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
 
     .btn-inner {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
+      gap: 8px;
     }
 
-    /* ─── Spinner ─────────────────────────────────────────── */
+    /* ── Spinner ──────────────────────────────────────────── */
 
     .spinner {
-      width: 17px;
-      height: 17px;
-      border: 2.5px solid rgba(0,0,0,0.2);
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0,0,0,0.2);
       border-top-color: rgba(0,0,0,0.7);
       border-radius: 50%;
       animation: spin 0.65s linear infinite;
@@ -315,197 +310,177 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ─── Result ──────────────────────────────────────────── */
+    /* ── Result ───────────────────────────────────────────── */
 
     #result {
-      border-radius: var(--radius);
-      padding: 32px 22px 26px;
+      border-radius: var(--radius-md);
+      padding: 28px 22px 24px;
       text-align: center;
-      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation: slideUp 0.25s ease both;
     }
 
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(10px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     #result.valid {
-      background: var(--green-bg);
-      border: 1px solid var(--green-border);
-      box-shadow: 0 0 40px var(--green-glow);
+      background: var(--teal-muted);
+      border: 1px solid rgba(3,218,198,0.25);
     }
 
     #result.invalid {
-      background: var(--red-bg);
-      border: 1px solid var(--red-border);
-      box-shadow: 0 0 40px var(--red-glow);
+      background: var(--danger-muted);
+      border: 1px solid rgba(207,102,121,0.25);
     }
 
     .result-icon-wrap {
-      width: 72px;
-      height: 72px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 18px;
+      margin: 0 auto 16px;
     }
 
     .valid .result-icon-wrap {
-      background: rgba(0,230,138,0.12);
-      border: 2px solid rgba(0,230,138,0.5);
-      box-shadow: 0 0 32px rgba(0,230,138,0.2), inset 0 0 20px rgba(0,230,138,0.05);
+      background: rgba(3,218,198,0.1);
+      border: 1px solid rgba(3,218,198,0.35);
     }
 
     .invalid .result-icon-wrap {
-      background: rgba(255,68,102,0.12);
-      border: 2px solid rgba(255,68,102,0.5);
-      box-shadow: 0 0 32px rgba(255,68,102,0.2), inset 0 0 20px rgba(255,68,102,0.05);
+      background: rgba(207,102,121,0.1);
+      border: 1px solid rgba(207,102,121,0.35);
     }
 
     .result-title {
-      font-size: 24px;
-      font-weight: 900;
-      letter-spacing: -0.4px;
-      margin-bottom: 8px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
     }
 
-    .valid .result-title  { color: var(--green); }
-    .invalid .result-title { color: var(--red); }
+    .valid .result-title  { color: var(--teal); }
+    .invalid .result-title { color: var(--danger); }
 
     .result-desc {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.55;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
       margin-bottom: 16px;
     }
 
     .result-addr {
-      display: inline-block;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius-xs);
-      padding: 7px 11px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
-      color: var(--text-muted);
+      display: block;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
       word-break: break-all;
       text-align: left;
-      width: 100%;
     }
 
-    /* ─── Error Box ───────────────────────────────────────── */
+    /* ── Error Box ────────────────────────────────────────── */
 
     .error-box {
-      background: rgba(255,120,60,0.07);
-      border: 1px solid rgba(255,120,60,0.22);
+      background: var(--danger-muted);
+      border: 1px solid rgba(207,102,121,0.25);
       border-radius: var(--radius-sm);
-      color: #ff9060;
+      color: var(--danger);
       font-size: 13px;
       line-height: 1.5;
       padding: 12px 14px;
       margin-top: 14px;
       animation: slideUp 0.2s ease both;
+      font-family: var(--mono);
     }
 
-    /* ─── Divider ─────────────────────────────────────────── */
-
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 20px 0;
-    }
-
-    /* ─── Footer ──────────────────────────────────────────── */
+    /* ── Footer ───────────────────────────────────────────── */
 
     .footer {
       text-align: center;
-      margin-top: 28px;
+      margin-top: 32px;
       font-size: 12px;
-      color: var(--text-dim);
+      color: var(--dim);
       line-height: 1.7;
     }
 
     .footer a {
-      color: var(--text-muted);
+      color: var(--muted);
       text-decoration: none;
       transition: color 0.15s;
     }
 
     .footer a:hover { color: var(--orange); }
 
-    .footer .lock-icon {
+    .footer .lock-line {
       display: inline-flex;
       align-items: center;
       gap: 5px;
       margin-top: 4px;
-      font-size: 11px;
-      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--dim);
     }
 
-    /* ─── Responsive fine-tuning ──────────────────────────── */
+    /* ── Responsive ───────────────────────────────────────── */
 
     @media (max-width: 380px) {
-      .container { padding: 20px 12px 48px; }
-      h1          { font-size: 24px; }
-      .card       { padding: 18px 14px; }
-      .result-title { font-size: 21px; }
+      .container { padding: 24px 14px 52px; }
+      h1 { font-size: 1.2rem; letter-spacing: 1.5px; }
+      .card { padding: 18px 16px; }
     }
 
-    @media (min-width: 500px) {
-      .container { padding-top: 40px; }
+    @media (min-width: 640px) {
+      .container { padding-top: 48px; }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- ── Nav ─────────────────────────────────────────────── -->
+  <nav>
+    <a class="nav-brand" href="https://safekeepbitcoin.com" target="_blank" rel="noopener">
+      SafeKeep<span>Bitcoin</span>
+    </a>
+    <span class="nav-tag">Signature Verifier</span>
+  </nav>
+
   <div class="container">
 
-    <!-- ── Header ─────────────────────────────────────────── -->
+    <!-- ── Header ──────────────────────────────────────────── -->
     <header class="header">
-      <div class="logo-row">
-        <div class="btc-ring">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="23" stroke="#f7931a" stroke-opacity="0.25" stroke-width="1.5"/>
-            <circle cx="24" cy="24" r="19" fill="rgba(247,147,26,0.08)"/>
-            <!-- Bitcoin ₿ symbol path -->
-            <text x="24" y="30.5" text-anchor="middle" fill="#f7931a"
-                  font-size="21" font-weight="900" font-family="Arial, sans-serif">₿</text>
-          </svg>
-        </div>
-        <div class="brand-block">
-          <div class="brand-name">SafeKeep</div>
-          <div class="brand-tagline">Bitcoin Security</div>
-        </div>
-      </div>
-
       <h1>Signature Verifier</h1>
-      <p class="subtitle">Cryptographically verify Bitcoin message signatures.<br/>All computation runs locally — nothing leaves your device.</p>
+      <p class="subtitle">
+        Cryptographically verify Bitcoin message signatures.<br/>
+        All computation runs locally — nothing leaves your device.
+      </p>
+      <div class="security-indicator">100% Client-Side · Zero Server Calls</div>
     </header>
 
-    <!-- ── Security Badge ─────────────────────────────────── -->
-    <div style="text-align:center; margin-bottom:20px;">
-      <div class="security-badge">
-        <span class="pulse-dot"></span>
-        100% Client-Side · Zero Server Calls
-      </div>
-    </div>
-
-    <!-- ── QR Auto-fill Info ───────────────────────────────── -->
+    <!-- ── QR Auto-fill Info ────────────────────────────────── -->
     <div id="qrInfo" class="qr-info hidden">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <rect x="1" y="1" width="6" height="6" rx="1" stroke="#6868a0" stroke-width="1.3"/>
-        <rect x="9" y="1" width="6" height="6" rx="1" stroke="#6868a0" stroke-width="1.3"/>
-        <rect x="1" y="9" width="6" height="6" rx="1" stroke="#6868a0" stroke-width="1.3"/>
-        <rect x="10" y="10" width="2" height="2" fill="#6868a0"/>
-        <rect x="13" y="10" width="2" height="2" fill="#6868a0"/>
-        <rect x="10" y="13" width="2" height="2" fill="#6868a0"/>
-        <rect x="13" y="13" width="2" height="2" fill="#6868a0"/>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="1" width="6" height="6" rx="1" stroke="#03dac6" stroke-width="1.3"/>
+        <rect x="9" y="1" width="6" height="6" rx="1" stroke="#03dac6" stroke-width="1.3"/>
+        <rect x="1" y="9" width="6" height="6" rx="1" stroke="#03dac6" stroke-width="1.3"/>
+        <rect x="10" y="10" width="2" height="2" fill="#03dac6"/>
+        <rect x="13" y="10" width="2" height="2" fill="#03dac6"/>
+        <rect x="10" y="13" width="2" height="2" fill="#03dac6"/>
+        <rect x="13" y="13" width="2" height="2" fill="#03dac6"/>
       </svg>
       Fields automatically populated from scanned QR code
     </div>
 
-    <!-- ── Main Card ──────────────────────────────────────── -->
+    <!-- ── Main Card ─────────────────────────────────────────── -->
     <div class="card">
 
       <!-- Address -->
@@ -517,7 +492,7 @@
         <input
           type="text"
           id="addressInput"
-          placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf…"
+          placeholder="bc1q… (native SegWit P2WPKH)"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="none"
@@ -549,7 +524,7 @@
         </div>
         <textarea
           id="signatureInput"
-          placeholder="H… (base64-encoded signature)"
+          placeholder="Base64-encoded BIP-322 signature…"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="none"
@@ -560,32 +535,28 @@
       <!-- Button -->
       <button class="btn-verify" id="verifyBtn" type="button">
         <span class="btn-inner" id="btnInner">
-          <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
-            <path d="M9 1.5L11.72 7.12L18 8.02L13.5 12.4L14.64 18.5L9 15.37L3.36 18.5L4.5 12.4L0 8.02L6.28 7.12L9 1.5Z"
-                  fill="currentColor"/>
-          </svg>
           Verify Signature
         </span>
       </button>
     </div>
 
-    <!-- ── Result ────────────────────────────────────────── -->
+    <!-- ── Result ───────────────────────────────────────────── -->
     <div id="result" class="hidden"></div>
 
-    <!-- ── Error ─────────────────────────────────────────── -->
+    <!-- ── Error ────────────────────────────────────────────── -->
     <div id="errorBox" class="error-box hidden"></div>
 
-    <!-- ── Footer ────────────────────────────────────────── -->
+    <!-- ── Footer ───────────────────────────────────────────── -->
     <footer class="footer">
       <div>
         <a href="https://safekeepbitcoin.com" target="_blank" rel="noopener">safekeepbitcoin.com</a>
       </div>
-      <div class="lock-icon">
-        <svg width="11" height="12" viewBox="0 0 11 12" fill="none">
-          <rect x="1" y="5" width="9" height="7" rx="1.5" stroke="#404060" stroke-width="1.2"/>
-          <path d="M3.5 5V3.5a2 2 0 014 0V5" stroke="#404060" stroke-width="1.2" stroke-linecap="round"/>
+      <div class="lock-line">
+        <svg width="10" height="11" viewBox="0 0 11 12" fill="none">
+          <rect x="1" y="5" width="9" height="7" rx="1.5" stroke="#7a7a82" stroke-width="1.2"/>
+          <path d="M3.5 5V3.5a2 2 0 014 0V5" stroke="#7a7a82" stroke-width="1.2" stroke-linecap="round"/>
         </svg>
-        Verified locally using secp256k1 cryptography
+        Verified locally · secp256k1 · BIP-322
       </div>
     </footer>
 
@@ -1002,8 +973,8 @@
         el.className = 'valid';
         el.innerHTML = `
           <div class="result-icon-wrap">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <path d="M6 16L13 23L26 9" stroke="#00e68a" stroke-width="3"
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+              <path d="M6 16L13 23L26 9" stroke="#03dac6" stroke-width="3"
                     stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
@@ -1017,8 +988,8 @@
         el.className = 'invalid';
         el.innerHTML = `
           <div class="result-icon-wrap">
-            <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
-              <path d="M8 8L22 22M22 8L8 22" stroke="#ff4466" stroke-width="3"
+            <svg width="26" height="26" viewBox="0 0 30 30" fill="none">
+              <path d="M8 8L22 22M22 8L8 22" stroke="#cf6679" stroke-width="3"
                     stroke-linecap="round"/>
             </svg>
           </div>
@@ -1054,9 +1025,7 @@
       btn.disabled = on;
       inner.innerHTML = on
         ? `<div class="spinner"></div> Verifying…`
-        : `<svg width="17" height="17" viewBox="0 0 20 20" fill="none">
-             <path d="M9 1.5L11.72 7.12L18 8.02L13.5 12.4L14.64 18.5L9 15.37L3.36 18.5L4.5 12.4L0 8.02L6.28 7.12L9 1.5Z" fill="currentColor"/>
-           </svg> Verify Signature`;
+        : `Verify Signature`;
     }
 
 
