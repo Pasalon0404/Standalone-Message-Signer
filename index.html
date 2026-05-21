@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#09090f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Bitcoin Signature Verifier — SafeKeep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg:            #09090f;
+      --surface:       #111118;
+      --surface-2:     #18181f;
+      --surface-3:     #1f1f28;
+      --border:        rgba(255,255,255,0.07);
+      --border-strong: rgba(255,255,255,0.13);
+      --text:          #eaeaf5;
+      --text-muted:    #6868a0;
+      --text-dim:      #404060;
+      --orange:        #f7931a;
+      --orange-glow:   rgba(247,147,26,0.18);
+      --orange-border: rgba(247,147,26,0.25);
+      --green:         #00e68a;
+      --green-bg:      rgba(0,230,138,0.07);
+      --green-border:  rgba(0,230,138,0.28);
+      --green-glow:    rgba(0,230,138,0.15);
+      --red:           #ff4466;
+      --red-bg:        rgba(255,68,102,0.07);
+      --red-border:    rgba(255,68,102,0.28);
+      --red-glow:      rgba(255,68,102,0.15);
+      --radius:        14px;
+      --radius-sm:     9px;
+      --radius-xs:     6px;
+    }
+
+    html {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100dvh;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 15% -10%, rgba(247,147,26,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 85% 110%, rgba(100,80,255,0.05) 0%, transparent 70%);
+    }
+
+    /* ─── Layout ──────────────────────────────────────────── */
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 28px 16px 56px;
+    }
+
+    /* ─── Header ──────────────────────────────────────────── */
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+      padding-top: 8px;
+    }
+
+    .logo-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 20px;
+    }
+
+    .btc-ring {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .btc-ring svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    .brand-block {
+      text-align: left;
+    }
+
+    .brand-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      line-height: 1.1;
+    }
+
+    .brand-tagline {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.7px;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 9px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* ─── Security Badge ──────────────────────────────────── */
+
+    .security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--orange-glow);
+      border: 1px solid var(--orange-border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--orange);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 0 rgba(247,147,26,0.5);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(247,147,26,0.5); }
+      50%       { box-shadow: 0 0 0 5px rgba(247,147,26,0); }
+    }
+
+    /* ─── QR Info Row ─────────────────────────────────────── */
+
+    .qr-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 13px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .qr-info svg { flex-shrink: 0; }
+
+    .hidden { display: none !important; }
+
+    /* ─── Card ────────────────────────────────────────────── */
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+
+    /* ─── Fields ──────────────────────────────────────────── */
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+    }
+
+    .filled-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--green);
+      background: rgba(0,230,138,0.09);
+      border: 1px solid rgba(0,230,138,0.22);
+      border-radius: 100px;
+      padding: 2px 6px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 11px 13px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      resize: none;
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: rgba(247,147,26,0.45);
+      box-shadow: 0 0 0 3px rgba(247,147,26,0.07);
+    }
+
+    input[type="text"]::placeholder,
+    textarea::placeholder {
+      color: var(--text-dim);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    #addressInput   { height: 46px; }
+    #messageInput   { height: 96px; }
+    #signatureInput { height: 78px; word-break: break-all; }
+
+    /* ─── Verify Button ───────────────────────────────────── */
+
+    .btn-verify {
+      width: 100%;
+      background: linear-gradient(135deg, #f7a21a 0%, #e07b08 100%);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #0a0507;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 15px 24px;
+      cursor: pointer;
+      letter-spacing: 0.1px;
+      margin-top: 22px;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px rgba(247,147,26,0.22);
+      -webkit-appearance: none;
+      appearance: none;
+      touch-action: manipulation;
+    }
+
+    .btn-verify:hover  { opacity: 0.93; box-shadow: 0 4px 24px rgba(247,147,26,0.32); }
+    .btn-verify:active { transform: scale(0.985); }
+    .btn-verify:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    /* ─── Spinner ─────────────────────────────────────────── */
+
+    .spinner {
+      width: 17px;
+      height: 17px;
+      border: 2.5px solid rgba(0,0,0,0.2);
+      border-top-color: rgba(0,0,0,0.7);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Result ──────────────────────────────────────────── */
+
+    #result {
+      border-radius: var(--radius);
+      padding: 32px 22px 26px;
+      text-align: center;
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    #result.valid {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      box-shadow: 0 0 40px var(--green-glow);
+    }
+
+    #result.invalid {
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      box-shadow: 0 0 40px var(--red-glow);
+    }
+
+    .result-icon-wrap {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+    }
+
+    .valid .result-icon-wrap {
+      background: rgba(0,230,138,0.12);
+      border: 2px solid rgba(0,230,138,0.5);
+      box-shadow: 0 0 32px rgba(0,230,138,0.2), inset 0 0 20px rgba(0,230,138,0.05);
+    }
+
+    .invalid .result-icon-wrap {
+      background: rgba(255,68,102,0.12);
+      border: 2px solid rgba(255,68,102,0.5);
+      box-shadow: 0 0 32px rgba(255,68,102,0.2), inset 0 0 20px rgba(255,68,102,0.05);
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+      margin-bottom: 8px;
+    }
+
+    .valid .result-title  { color: var(--green); }
+    .invalid .result-title { color: var(--red); }
+
+    .result-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+
+    .result-addr {
+      display: inline-block;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-xs);
+      padding: 7px 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      word-break: break-all;
+      text-align: left;
+      width: 100%;
+    }
+
+    /* ─── Error Box ───────────────────────────────────────── */
+
+    .error-box {
+      background: rgba(255,120,60,0.07);
+      border: 1px solid rgba(255,120,60,0.22);
+      border-radius: var(--radius-sm);
+      color: #ff9060;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 12px 14px;
+      margin-top: 14px;
+      animation: slideUp 0.2s ease both;
+    }
+
+    /* ─── Divider ─────────────────────────────────────────── */
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    /* ─── Footer ──────────────────────────────────────────── */
+
+    .footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    .footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer a:hover { color: var(--orange); }
+
+    .footer .lock-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ─── Responsive fine-tuning ──────────────────────────── */
+
+    @media (max-width: 380px) {
+      .container { padding: 20px 12px 48px; }
+      h1          { font-size: 24px; }
+      .card       { padding: 18px 14px; }
+      .result-title { font-size: 21px; }
+    }
+
+    @media (min-width: 500px) {
+      .container { padding-top: 40px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- ── Header ─────────────────────────────────────────── -->
+    <header class="header">
+      <div class="logo-row">
+        <div class="btc-ring">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="23" stroke="#f7931a" stroke-opacity="0.25" stroke-width="1.5"/>
+            <circle cx="24" cy="24" r="19" fill="rgba(247,147,26,0.08)"/>
+            <!-- Bitcoin ₿ symbol path -->
+            <text x="24" y="30.5" text-anchor="middle" fill="#f7931a"
+                  font-size="21" font-weight="900" font-family="Arial, sans-serif">₿</text>
+          </svg>
+        </div>
+        <div class="brand-block">
+          <div class="brand-name">SafeKeep</div>
+          <div class="brand-tagline">Bitcoin Security</div>
+        </div>
+      </div>
+
+      <h1>Signature Verifier</h1>
+      <p class="subtitle">Cryptographically verify Bitcoin message signatures.<br/>All computation runs locally — nothing leaves your device.</p>
+    </header>
+
+    <!-- ── Security Badge ─────────────────────────────────── -->
+    <div style="text-align:center; margin-bottom:20px;">
+      <div class="security-badge">
+        <span class="pulse-dot"></span>
+        100% Client-Side · Zero Server Calls
+      </div>
+    </div>
+
+    <!-- ── QR Auto-fill Info ───────────────────────────────── -->
+    <div id="qrInfo" class="qr-info hidden">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="1" width="6" height="6" rx="1" stroke="#6868a0" stroke-width="1.3"/>
+        <rect x="9" y="1" width="6" height="6" rx="1" stroke="#6868a0" stroke-width="1.3"/>
+        <rect x="1" y="9" width="6" height="6" rx="1" stroke="#6868a0" stroke-width="1.3"/>
+        <rect x="10" y="10" width="2" height="2" fill="#6868a0"/>
+        <rect x="13" y="10" width="2" height="2" fill="#6868a0"/>
+        <rect x="10" y="13" width="2" height="2" fill="#6868a0"/>
+        <rect x="13" y="13" width="2" height="2" fill="#6868a0"/>
+      </svg>
+      Fields automatically populated from scanned QR code
+    </div>
+
+    <!-- ── Main Card ──────────────────────────────────────── -->
+    <div class="card">
+
+      <!-- Address -->
+      <div class="field">
+        <div class="label-row">
+          <label for="addressInput">Bitcoin Address</label>
+          <span id="addrBadge" class="filled-badge hidden">✓ auto-filled</span>
+        </div>
+        <input
+          type="text"
+          id="addressInput"
+          placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf…"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+        />
+      </div>
+
+      <!-- Message -->
+      <div class="field">
+        <div class="label-row">
+          <label for="messageInput">Signed Message</label>
+          <span id="msgBadge" class="filled-badge hidden">✓ auto-filled</span>
+        </div>
+        <textarea
+          id="messageInput"
+          placeholder="The exact message that was signed…"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+        ></textarea>
+      </div>
+
+      <!-- Signature -->
+      <div class="field">
+        <div class="label-row">
+          <label for="signatureInput">Signature (Base64)</label>
+          <span id="sigBadge" class="filled-badge hidden">✓ auto-filled</span>
+        </div>
+        <textarea
+          id="signatureInput"
+          placeholder="H… (base64-encoded signature)"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+        ></textarea>
+      </div>
+
+      <!-- Button -->
+      <button class="btn-verify" id="verifyBtn" type="button">
+        <span class="btn-inner" id="btnInner">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+            <path d="M9 1.5L11.72 7.12L18 8.02L13.5 12.4L14.64 18.5L9 15.37L3.36 18.5L4.5 12.4L0 8.02L6.28 7.12L9 1.5Z"
+                  fill="currentColor"/>
+          </svg>
+          Verify Signature
+        </span>
+      </button>
+    </div>
+
+    <!-- ── Result ────────────────────────────────────────── -->
+    <div id="result" class="hidden"></div>
+
+    <!-- ── Error ─────────────────────────────────────────── -->
+    <div id="errorBox" class="error-box hidden"></div>
+
+    <!-- ── Footer ────────────────────────────────────────── -->
+    <footer class="footer">
+      <div>
+        <a href="https://safekeepbitcoin.com" target="_blank" rel="noopener">safekeepbitcoin.com</a>
+      </div>
+      <div class="lock-icon">
+        <svg width="11" height="12" viewBox="0 0 11 12" fill="none">
+          <rect x="1" y="5" width="9" height="7" rx="1.5" stroke="#404060" stroke-width="1.2"/>
+          <path d="M3.5 5V3.5a2 2 0 014 0V5" stroke="#404060" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Verified locally using secp256k1 cryptography
+      </div>
+    </footer>
+
+  </div><!-- /container -->
+
+  <!-- ═══════════════════════════════════════════════════════
+       BIP-322 Verification Engine — vanilla ES modules
+       Supports: P2WPKH (bc1q native SegWit) "Simple" signatures
+  ════════════════════════════════════════════════════════ -->
+  <script type="module">
+
+    // ── CDN Imports ─────────────────────────────────────────
+    import { secp256k1 } from 'https://esm.sh/@noble/curves@1.4.2/secp256k1';
+    import { sha256 }    from 'https://esm.sh/@noble/hashes@1.4.0/sha256';
+    import { ripemd160 } from 'https://esm.sh/@noble/hashes@1.4.0/ripemd160';
+
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 1 — Byte / encoding utilities
+    // ═══════════════════════════════════════════════════════
+
+    function concatBytes(...arrays) {
+      const len = arrays.reduce((s, a) => s + a.length, 0);
+      const out = new Uint8Array(len);
+      let off = 0;
+      for (const a of arrays) { out.set(a, off); off += a.length; }
+      return out;
+    }
+
+    function base64ToBytes(str) {
+      str = str.trim().replace(/\s+/g, '');
+      let bin;
+      try { bin = atob(str); }
+      catch (_) { throw new Error('Signature is not valid Base64 — check for copy/paste errors.'); }
+      const out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+
+    // Little-endian integer helpers
+    function uint32LE(n) {
+      return new Uint8Array([n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff]);
+    }
+
+    function uint64LE(n) {          // accepts Number or BigInt; value must fit in 53-bit safe int for Number
+      const bn = typeof n === 'bigint' ? n : BigInt(n);
+      const lo = Number(bn & 0xFFFFFFFFn);
+      const hi = Number((bn >> 32n) & 0xFFFFFFFFn);
+      return new Uint8Array([
+        lo & 0xff, (lo >> 8) & 0xff, (lo >> 16) & 0xff, (lo >> 24) >>> 0 & 0xff,
+        hi & 0xff, (hi >> 8) & 0xff, (hi >> 16) & 0xff, (hi >> 24) >>> 0 & 0xff,
+      ]);
+    }
+
+    // Bitcoin variable-length integer (varint)
+    function encodeVarint(n) {
+      if (n < 0xfd) return new Uint8Array([n]);
+      if (n <= 0xffff) return new Uint8Array([0xfd, n & 0xff, (n >> 8) & 0xff]);
+      return new Uint8Array([0xfe, n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff]);
+    }
+
+    // Returns [value, bytesConsumed]
+    function decodeVarint(bytes, offset) {
+      const first = bytes[offset];
+      if (first < 0xfd) return [first, 1];
+      if (first === 0xfd) return [bytes[offset+1] | (bytes[offset+2] << 8), 3];
+      // 0xfe — four-byte uint32
+      const n = bytes[offset+1] + bytes[offset+2]*0x100 + bytes[offset+3]*0x10000 + bytes[offset+4]*0x1000000;
+      return [n, 5];
+    }
+
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 2 — Bech32 decoder (for bc1q… P2WPKH addresses)
+    // ═══════════════════════════════════════════════════════
+
+    const B32_CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+    const B32_GEN     = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
+
+    function b32Polymod(values) {
+      let chk = 1;
+      for (const v of values) {
+        const b = chk >> 25;
+        chk = (chk & 0x1ffffff) << 5 ^ v;
+        for (let i = 0; i < 5; i++) chk ^= ((b >> i) & 1) ? B32_GEN[i] : 0;
+      }
+      return chk;
+    }
+
+    function b32HrpExpand(hrp) {
+      const r = [];
+      for (const c of hrp) r.push(c.charCodeAt(0) >> 5);
+      r.push(0);
+      for (const c of hrp) r.push(c.charCodeAt(0) & 31);
+      return r;
+    }
+
+    // Converts between bit-group widths; pad=false for decoding
+    function convertBits(data, from, to, pad = true) {
+      let acc = 0, bits = 0;
+      const result = [], maxv = (1 << to) - 1;
+      for (const v of data) {
+        if (v < 0 || v >> from) return null;
+        acc = (acc << from) | v;
+        bits += from;
+        while (bits >= to) { bits -= to; result.push((acc >> bits) & maxv); }
+      }
+      if (pad) {
+        if (bits > 0) result.push((acc << (to - bits)) & maxv);
+      } else if (bits >= from || ((acc << (to - bits)) & maxv) !== 0) {
+        return null;   // invalid padding
+      }
+      return result;
+    }
+
+    // Decodes a bech32 address and returns { witnessVersion, witnessProgram }
+    function bech32Decode(addr) {
+      const lower = addr.toLowerCase();
+      const sep   = lower.lastIndexOf('1');
+      if (sep < 1) throw new Error('Invalid bech32 address: missing separator.');
+      const hrp  = lower.slice(0, sep);
+      const enc  = lower.slice(sep + 1);
+      const data = [];
+      for (const c of enc) {
+        const i = B32_CHARSET.indexOf(c);
+        if (i < 0) throw new Error(`Invalid bech32 character '${c}'.`);
+        data.push(i);
+      }
+      // Verify bech32 checksum (constant = 1; bech32m uses 0x2bc830a3)
+      if (b32Polymod([...b32HrpExpand(hrp), ...data]) !== 1) {
+        throw new Error('Bech32 checksum mismatch — address may be corrupted.');
+      }
+      const payload        = data.slice(0, -6);
+      const witnessVersion = payload[0];
+      const decoded        = convertBits(payload.slice(1), 5, 8, false);
+      if (!decoded) throw new Error('Invalid witness program encoding in address.');
+      return { hrp, witnessVersion, witnessProgram: new Uint8Array(decoded) };
+    }
+
+    // Converts a bc1q (P2WPKH) address to its 22-byte scriptPubKey
+    function addressToScriptPubKey(address) {
+      const a = address.trim();
+      if (/^bc1q/i.test(a)) {
+        const { witnessVersion, witnessProgram } = bech32Decode(a);
+        if (witnessVersion !== 0 || witnessProgram.length !== 20) {
+          throw new Error('Unexpected P2WPKH witness program length.');
+        }
+        // OP_0 OP_PUSHBYTES_20 <20-byte hash160>
+        return new Uint8Array([0x00, 0x14, ...witnessProgram]);
+      }
+      if (/^bc1p/i.test(a)) {
+        throw new Error(
+          'Taproot (bc1p) addresses use BIP-340 Schnorr signatures, which are not yet ' +
+          'supported by this tool. Please use a bc1q (native SegWit P2WPKH) address.'
+        );
+      }
+      if (/^[13]/.test(a)) {
+        throw new Error(
+          'This tool verifies BIP-322 "Simple" signatures, which require native SegWit ' +
+          '(bc1q) addresses. Legacy (1…) and P2SH (3…) addresses are not supported.'
+        );
+      }
+      throw new Error(`Unrecognised address format: "${a.slice(0, 14)}…"`);
+    }
+
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 3 — Hash helpers
+    // ═══════════════════════════════════════════════════════
+
+    function doubleSha256(bytes) { return sha256(sha256(bytes)); }
+    function hash160(bytes)      { return ripemd160(sha256(bytes)); }
+
+    // BIP-340 tagged hash: SHA256(SHA256(tag) || SHA256(tag) || data)
+    function taggedHash(tag, data) {
+      const t = sha256(new TextEncoder().encode(tag));
+      return sha256(concatBytes(t, t, data));
+    }
+
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 4 — BIP-322 transaction construction
+    // ═══════════════════════════════════════════════════════
+
+    /**
+     * Builds and serialises the to_spend virtual transaction (non-segwit).
+     *
+     *   nVersion = 0
+     *   vin[0]:  prevout = (0x000…000, 0xFFFFFFFF), nSequence = 0
+     *            scriptSig = OP_0 OP_PUSHBYTES_32 <taggedHash("BIP0322-signed-message", msg)>
+     *   vout[0]: nValue = 0, scriptPubKey = <address scriptPubKey>
+     *   nLockTime = 0
+     *
+     * Its double-SHA256 is the TXID that to_sign must spend at vout index 0.
+     */
+    function buildToSpend(scriptPubKey, message) {
+      const msgHash   = taggedHash('BIP0322-signed-message', new TextEncoder().encode(message));
+      const scriptSig = new Uint8Array([0x00, 0x20, ...msgHash]); // OP_0 OP_PUSHBYTES_32 <hash>
+
+      return concatBytes(
+        uint32LE(0),                                      // nVersion = 0
+        encodeVarint(1),                                  // vin count = 1
+        new Uint8Array(32),                               // prevout txid = 0x000…000
+        new Uint8Array([0xff, 0xff, 0xff, 0xff]),         // prevout vout = 0xFFFFFFFF
+        encodeVarint(scriptSig.length), scriptSig,        // scriptSig
+        uint32LE(0),                                      // nSequence = 0
+        encodeVarint(1),                                  // vout count = 1
+        uint64LE(0n),                                     // nValue = 0
+        encodeVarint(scriptPubKey.length), scriptPubKey,  // scriptPubKey
+        uint32LE(0)                                       // nLockTime = 0
+      );
+    }
+
+    /**
+     * Parses the BIP-322 "Simple" Base64 payload.
+     *
+     * IMPORTANT — the payload is NOT a full transaction. Per the BIP-322 spec,
+     * it is solely the serialised witness stack of the to_sign transaction:
+     *
+     *   [varint: N items]
+     *     [varint: len_0][bytes_0]   ← DER signature + sighash-type byte
+     *     [varint: len_1][bytes_1]   ← compressed public key (33 bytes)
+     *     …
+     *
+     * Example leading bytes for a P2WPKH sig:
+     *   02          — 2 stack items
+     *   48          — 72 bytes follow (signature)
+     *   <72 bytes>
+     *   21          — 33 bytes follow (pubkey)
+     *   <33 bytes>
+     *
+     * Returns an array of Uint8Array items (the witness stack).
+     */
+    function parseWitnessStack(base64Sig) {
+      const raw = base64ToBytes(base64Sig);
+      let off = 0;
+
+      const readVarint = () => {
+        const [val, size] = decodeVarint(raw, off);
+        off += size;
+        return val;
+      };
+
+      const numItems = readVarint();
+      if (numItems === 0 || numItems > 16) {
+        throw new Error(`Unexpected witness stack size: ${numItems} items.`);
+      }
+
+      const items = [];
+      for (let i = 0; i < numItems; i++) {
+        const len = readVarint();
+        if (off + len > raw.length) {
+          throw new Error(`Witness item ${i} length (${len}) exceeds payload boundary.`);
+        }
+        items.push(raw.slice(off, off + len));
+        off += len;
+      }
+
+      return items;   // Array<Uint8Array>
+    }
+
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 5 — BIP-143 sighash for to_sign (P2WPKH)
+    // ═══════════════════════════════════════════════════════
+
+    /**
+     * Computes the BIP-143 segwit sighash for to_sign's P2WPKH input.
+     *
+     * The to_sign transaction structure is fully deterministic under BIP-322:
+     *   nVersion = 0
+     *   vin[0]: prevout = (toSpendTxid, 0), nSequence = 0, scriptSig = empty
+     *   vout[0]: nValue = 0, scriptPubKey = OP_RETURN (0x6a)
+     *   nLockTime = 0
+     *   sighash type = SIGHASH_ALL (1)
+     *
+     * The "value of the output being spent" (field 6 of BIP-143) is to_spend's
+     * vout[0].nValue = 0 satoshis.
+     *
+     * @param {Uint8Array} toSpendTxid   - raw SHA256d of to_spend serialisation
+     * @param {Uint8Array} hash160PubKey - 20-byte pubkey hash from the address scriptPubKey
+     */
+    function bip143SighashP2WPKH(toSpendTxid, hash160PubKey) {
+      // outpoint = toSpendTxid || vout(0)
+      const outpoint     = concatBytes(toSpendTxid, uint32LE(0));
+
+      // hashPrevouts = SHA256d(outpoint)
+      const hashPrevouts = doubleSha256(outpoint);
+
+      // hashSequence = SHA256d(nSequence=0)
+      const hashSequence = doubleSha256(uint32LE(0));
+
+      // scriptCode = varint(25) || OP_DUP OP_HASH160 OP_PUSHBYTES_20 <hash160> OP_EQUALVERIFY OP_CHECKSIG
+      //   76=OP_DUP  a9=OP_HASH160  14=OP_PUSHBYTES_20  88=OP_EQUALVERIFY  ac=OP_CHECKSIG
+      const scriptCode = concatBytes(
+        encodeVarint(25),
+        new Uint8Array([0x76, 0xa9, 0x14]),
+        hash160PubKey,
+        new Uint8Array([0x88, 0xac])
+      );
+
+      // to_sign vout[0] is OP_RETURN with 0 satoshis
+      // hashOutputs = SHA256d( uint64LE(0) || varint(1) || 0x6a )
+      const hashOutputs = doubleSha256(concatBytes(
+        uint64LE(0n),
+        encodeVarint(1),
+        new Uint8Array([0x6a])   // OP_RETURN
+      ));
+
+      // BIP-143 preimage (10 fields)
+      const preimage = concatBytes(
+        uint32LE(0),          // 1.  nVersion of to_sign = 0
+        hashPrevouts,         // 2.  hashPrevouts
+        hashSequence,         // 3.  hashSequence
+        outpoint,             // 4.  outpoint (txid || vout)
+        scriptCode,           // 5.  scriptCode (length-prefixed P2PKH script)
+        uint64LE(0n),         // 6.  value of output BEING SPENT = 0 (to_spend vout[0])
+        uint32LE(0),          // 7.  nSequence of to_sign input = 0
+        hashOutputs,          // 8.  hashOutputs
+        uint32LE(0),          // 9.  nLockTime of to_sign = 0
+        uint32LE(1)           // 10. SIGHASH_ALL
+      );
+
+      return doubleSha256(preimage);
+    }
+
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 6 — Main BIP-322 verifier
+    // ═══════════════════════════════════════════════════════
+
+    /**
+     * Verifies a BIP-322 "Simple" signature.
+     *
+     *  1. Decode the address → scriptPubKey and expected hash160
+     *  2. Parse the Base64 payload as a raw witness stack [sig, pubkey]
+     *  3. Confirm the pubkey hashes to the expected address
+     *  4. Build to_spend and compute its TXID
+     *  5. Compute the BIP-143 sighash for the (deterministic) to_sign tx
+     *  6. Verify the DER ECDSA signature
+     *
+     * Returns true / false, or throws on structurally invalid input.
+     */
+    function verifyBIP322(address, message, signatureB64) {
+      // ── 1. Address → scriptPubKey ──────────────────────────
+      const scriptPubKey = addressToScriptPubKey(address);
+      // P2WPKH: [0x00, 0x14, <20-byte hash160>]
+      if (scriptPubKey.length !== 22 || scriptPubKey[0] !== 0x00 || scriptPubKey[1] !== 0x14) {
+        throw new Error('Only P2WPKH (bc1q) scriptPubKeys are supported.');
+      }
+      const expectedHash160 = scriptPubKey.slice(2);
+
+      // ── 2. Parse witness stack from the Base64 payload ─────
+      //    The BIP-322 "Simple" payload is ONLY the serialised witness stack,
+      //    not a full transaction.
+      let witnessStack;
+      try {
+        witnessStack = parseWitnessStack(signatureB64);
+      } catch (e) {
+        throw new Error('Could not parse BIP-322 witness stack: ' + e.message);
+      }
+
+      if (witnessStack.length !== 2) {
+        throw new Error(
+          `P2WPKH witness stack must have exactly 2 items ` +
+          `(got ${witnessStack.length}). Is this a bc1q BIP-322 signature?`
+        );
+      }
+
+      const [sigWithHashType, pubKeyBytes] = witnessStack;
+
+      if (pubKeyBytes.length !== 33) {
+        throw new Error(`Expected a 33-byte compressed public key, got ${pubKeyBytes.length} bytes.`);
+      }
+
+      // ── 3. Confirm pubkey belongs to this address ──────────
+      const derivedHash160 = hash160(pubKeyBytes);
+      if (!derivedHash160.every((b, i) => b === expectedHash160[i])) {
+        return false;   // pubkey doesn't correspond to this address
+      }
+
+      // ── 4. Build to_spend → TXID ───────────────────────────
+      const toSpendTxid = doubleSha256(buildToSpend(scriptPubKey, message));
+
+      // ── 5. Compute the BIP-143 sighash ─────────────────────
+      const sighash = bip143SighashP2WPKH(toSpendTxid, expectedHash160);
+
+      // ── 6. Verify DER ECDSA signature ──────────────────────
+      // sigWithHashType = DER bytes + 1-byte sighash-type suffix
+      const derBytes = sigWithHashType.slice(0, -1);
+      let sig;
+      try {
+        sig = secp256k1.Signature.fromDER(derBytes);
+      } catch (e) {
+        throw new Error('Witness item 0 is not valid DER-encoded ECDSA: ' + e.message);
+      }
+
+      return secp256k1.verify(sig, sighash, pubKeyBytes, { lowS: false });
+    }
+
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 7 — UI helpers
+    // ═══════════════════════════════════════════════════════
+
+    function esc(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function showResult(isValid, address) {
+      const el = document.getElementById('result');
+      el.classList.remove('hidden');
+      if (isValid) {
+        el.className = 'valid';
+        el.innerHTML = `
+          <div class="result-icon-wrap">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M6 16L13 23L26 9" stroke="#00e68a" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="result-title">Signature Valid</div>
+          <p class="result-desc">
+            This message was cryptographically signed by the owner of this address.<br/>
+            The BIP-322 signature is authentic and unaltered.
+          </p>
+          <div class="result-addr">${esc(address)}</div>`;
+      } else {
+        el.className = 'invalid';
+        el.innerHTML = `
+          <div class="result-icon-wrap">
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+              <path d="M8 8L22 22M22 8L8 22" stroke="#ff4466" stroke-width="3"
+                    stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="result-title">Signature Invalid</div>
+          <p class="result-desc">
+            The BIP-322 signature does not verify for this address and message.<br/>
+            The data may be incorrect, tampered with, or from a different key.
+          </p>`;
+      }
+    }
+
+    function clearResult() {
+      const el = document.getElementById('result');
+      el.className = 'hidden';
+      el.innerHTML = '';
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorBox');
+      el.textContent = '⚠  ' + msg;
+      el.classList.remove('hidden');
+    }
+
+    function clearError() {
+      const el = document.getElementById('errorBox');
+      el.classList.add('hidden');
+      el.textContent = '';
+    }
+
+    function setLoading(on) {
+      const btn   = document.getElementById('verifyBtn');
+      const inner = document.getElementById('btnInner');
+      btn.disabled = on;
+      inner.innerHTML = on
+        ? `<div class="spinner"></div> Verifying…`
+        : `<svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+             <path d="M9 1.5L11.72 7.12L18 8.02L13.5 12.4L14.64 18.5L9 15.37L3.36 18.5L4.5 12.4L0 8.02L6.28 7.12L9 1.5Z" fill="currentColor"/>
+           </svg> Verify Signature`;
+    }
+
+
+    // ═══════════════════════════════════════════════════════
+    //  SECTION 8 — Initialise: URL params + event wiring
+    // ═══════════════════════════════════════════════════════
+
+    function getParam(name) {
+      // URLSearchParams handles %xx and + → space automatically
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    const pAddress   = getParam('address');
+    const pMessage   = getParam('msg');
+    const pSignature = getParam('sig');
+    const hasParams  = pAddress || pMessage || pSignature;
+
+    if (pAddress)   {
+      document.getElementById('addressInput').value = pAddress;
+      document.getElementById('addrBadge').classList.remove('hidden');
+    }
+    if (pMessage)   {
+      document.getElementById('messageInput').value = pMessage;
+      document.getElementById('msgBadge').classList.remove('hidden');
+    }
+    if (pSignature) {
+      document.getElementById('signatureInput').value = pSignature;
+      document.getElementById('sigBadge').classList.remove('hidden');
+    }
+    if (hasParams) {
+      document.getElementById('qrInfo').classList.remove('hidden');
+    }
+
+    document.getElementById('verifyBtn').addEventListener('click', async () => {
+      clearError();
+      clearResult();
+
+      const address   = document.getElementById('addressInput').value.trim();
+      const message   = document.getElementById('messageInput').value;   // preserve exact whitespace
+      const signature = document.getElementById('signatureInput').value.trim();
+
+      if (!address)   { showError('Please enter a Bitcoin address.'); return; }
+      if (!message)   { showError('Please enter the signed message.'); return; }
+      if (!signature) { showError('Please enter the Base64 BIP-322 signature.'); return; }
+
+      setLoading(true);
+      // Yield to the browser so the spinner paints before sync crypto work
+      await new Promise(r => setTimeout(r, 30));
+
+      try {
+        const valid = verifyBIP322(address, message, signature);
+        showResult(valid, address);
+      } catch (err) {
+        showError(err.message || 'Verification failed. Please check all three fields.');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Auto-verify when all three parameters arrive from a scanned QR code
+    if (pAddress && pMessage && pSignature) {
+      setTimeout(() => document.getElementById('verifyBtn').click(), 400);
+    }
+
+  </script>
+</body>
+</html>
