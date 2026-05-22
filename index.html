@@ -1111,6 +1111,28 @@
         : `Verify Signature`;
     }
 
+    // ── BIP-322 v1.0.0 prefix sanitizer ────────────────────────────
+    // Per the finalised spec, wallets like Sparrow v2.5.1+ prepend a
+    // 3-char type prefix to signatures:
+    //   smp  — Simple (strip prefix, pass raw Base64 to verifier)
+    //   ful  — Full transaction (unsupported, abort)
+    //   pof  — Proof of Funds  (unsupported, abort)
+    // Strings with no recognised prefix are treated as legacy pre-v1.0.0
+    // raw Base64 and passed through unchanged for backward compatibility.
+    function sanitizeSignature(raw) {
+      if (raw.startsWith('smp')) {
+        return { base64: raw.slice(3), error: null };
+      }
+      if (raw.startsWith('ful') || raw.startsWith('pof')) {
+        return {
+          base64: null,
+          error: 'Full transaction and Proof of Funds signatures are not supported. Please use a Simple signature.'
+        };
+      }
+      // No recognised prefix — legacy Base64, pass through unchanged
+      return { base64: raw, error: null };
+    }
+
 
     // ═══════════════════════════════════════════════════════
     //  SECTION 8 — Share link generator + copy button
@@ -1205,11 +1227,15 @@
 
       const address   = document.getElementById('addressInput').value.trim();
       const message   = document.getElementById('messageInput').value;   // preserve exact whitespace
-      const signature = document.getElementById('signatureInput').value.trim();
+      const rawSig    = document.getElementById('signatureInput').value.trim();
 
       if (!address)   { showError('Please enter a Bitcoin address.'); return; }
       if (!message)   { showError('Please enter the signed message.'); return; }
-      if (!signature) { showError('Please enter the Base64 BIP-322 signature.'); return; }
+      if (!rawSig)    { showError('Please enter the Base64 BIP-322 signature.'); return; }
+
+      // Apply BIP-322 v1.0.0 prefix check before handing off to the engine
+      const { base64: signature, error: prefixError } = sanitizeSignature(rawSig);
+      if (prefixError) { showError(prefixError); return; }
 
       setLoading(true);
       // Yield to the browser so the spinner paints before sync crypto work
